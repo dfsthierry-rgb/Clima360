@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import { SurveyResponse, PILLARS, QUESTIONS } from '../data/mockData';
 
 export function Configuracoes() {
-  const { headcounts, setHeadcounts, allData, empresas, uploadData, clearData, lastUploadDate } = useAppContext();
+  const { headcounts, updateHeadcounts, formsLinks, updateFormsLinks, allData, empresas, uploadData, clearData, lastUploadDate } = useAppContext();
   const [localHeadcounts, setLocalHeadcounts] = useState(headcounts);
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,8 +28,8 @@ export function Configuracoes() {
     vigSemIden: null,
   });
 
-  const handleSave = () => {
-    setHeadcounts(localHeadcounts);
+  const handleSave = async () => {
+    await updateHeadcounts(localHeadcounts);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -200,26 +200,20 @@ export function Configuracoes() {
     setPendingFiles(prev => ({ ...prev, [key]: file }));
   };
 
-  const [customDepts, setCustomDepts] = useState<string[]>([]);
-  const [removedCompanies, setRemovedCompanies] = useState<string[]>([]);
   const [newDeptName, setNewDeptName] = useState('');
 
   const hrCompanies = Array.from(new Set([
-    "Elasa", "Zampese", "Central Mesh São Paulo", "Administrativo", "Operacao", 
-    ...empresas, ...customDepts, ...Object.keys(localHeadcounts)
-  ])).filter(c => !removedCompanies.includes(c));
+    ...empresas, ...Object.keys(localHeadcounts)
+  ])).sort();
 
   const handleAddDept = () => {
     if (newDeptName.trim() && !hrCompanies.includes(newDeptName.trim())) {
-      setCustomDepts(prev => [...prev, newDeptName.trim()]);
-      setRemovedCompanies(prev => prev.filter(c => c !== newDeptName.trim())); // un-remove if it was removed
       setLocalHeadcounts(prev => ({ ...prev, [newDeptName.trim()]: 0 }));
       setNewDeptName('');
     }
   };
 
   const handleRemoveDept = (dept: string) => {
-    setRemovedCompanies(prev => [...prev, dept]);
     const newHc = { ...localHeadcounts };
     delete newHc[dept];
     setLocalHeadcounts(newHc);
@@ -275,8 +269,6 @@ export function Configuracoes() {
               if (window.confirm('Tem certeza que deseja limpar todas as bases? Ao continuar as bases serão apagadas.')) {
                 await clearData();
                 setLocalHeadcounts({});
-                setCustomDepts([]);
-                setRemovedCompanies([]);
                 
                 if (histIdenRef.current) histIdenRef.current.value = '';
                 if (histSemIdenRef.current) histSemIdenRef.current.value = '';
@@ -363,11 +355,23 @@ export function Configuracoes() {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-400">Forms Vigente (Anônimo)</label>
-            <input type="text" defaultValue="https://forms.gle/kiLJ7u8eVhbMdfbn9" className="bg-slate-950 border border-slate-700 text-slate-300 rounded-lg px-4 py-2 opacity-80" />
+            <input
+              type="text"
+              value={formsLinks.anonimo}
+              onChange={e => updateFormsLinks({ ...formsLinks, anonimo: e.target.value })}
+              placeholder="https://forms.gle/..."
+              className="bg-slate-950 border border-slate-700 text-slate-300 rounded-lg px-4 py-2"
+            />
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-400">Forms Vigente (Identificado)</label>
-            <input type="text" defaultValue="https://forms.gle/DrbT95ccp4rgeAwC9" className="bg-slate-950 border border-slate-700 text-slate-300 rounded-lg px-4 py-2 opacity-80" />
+            <input
+              type="text"
+              value={formsLinks.identificado}
+              onChange={e => updateFormsLinks({ ...formsLinks, identificado: e.target.value })}
+              placeholder="https://forms.gle/..."
+              className="bg-slate-950 border border-slate-700 text-slate-300 rounded-lg px-4 py-2"
+            />
           </div>
         </div>
       </div>
