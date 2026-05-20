@@ -11,13 +11,20 @@ export interface Filters {
   lider: string;
 }
 
+export interface FormsLinks {
+  anonimo: string;
+  identificado: string;
+}
+
 interface AppContextType {
   filters: Filters;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   filteredData: SurveyResponse[];
   allData: SurveyResponse[];
   headcounts: Record<string, number>;
-  setHeadcounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  updateHeadcounts: (newHeadcounts: Record<string, number>) => Promise<void>;
+  formsLinks: FormsLinks;
+  updateFormsLinks: (links: FormsLinks) => Promise<void>;
   empresas: string[];
   departamentos: string[];
   ciclos: string[];
@@ -43,6 +50,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [allData, setAllData] = useState<SurveyResponse[]>([]);
   const [headcounts, setHeadcounts] = useState<Record<string, number>>({});
+  const [formsLinks, setFormsLinks] = useState<FormsLinks>({
+    anonimo: '',
+    identificado: ''
+  });
   const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
@@ -52,10 +63,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const storedData = await localforage.getItem<SurveyResponse[]>('survey_allData');
         const storedHeadcounts = await localforage.getItem<Record<string, number>>('survey_headcounts');
         const storedUploadDate = await localforage.getItem<string>('survey_lastUploadDate');
+        const storedFormsLinks = await localforage.getItem<FormsLinks>('survey_formsLinks');
         
         if (storedData) setAllData(storedData);
         if (storedHeadcounts) setHeadcounts(storedHeadcounts);
         if (storedUploadDate) setLastUploadDate(storedUploadDate);
+        if (storedFormsLinks) setFormsLinks(storedFormsLinks);
       } catch (err) {
         console.error("Error loading data from localforage", err);
       } finally {
@@ -80,13 +93,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await localforage.setItem('survey_lastUploadDate', dateStr);
   };
 
+  const updateHeadcounts = async (newHeadcounts: Record<string, number>) => {
+    setHeadcounts(newHeadcounts);
+    await localforage.setItem('survey_headcounts', newHeadcounts);
+  };
+
+  const updateFormsLinks = async (links: FormsLinks) => {
+    setFormsLinks(links);
+    await localforage.setItem('survey_formsLinks', links);
+  };
+
   const clearData = async () => {
     setAllData([]);
     setHeadcounts({});
     setLastUploadDate(null);
-    await localforage.removeItem('survey_allData');
-    await localforage.removeItem('survey_headcounts');
-    await localforage.removeItem('survey_lastUploadDate');
+    setFormsLinks({
+      anonimo: '',
+      identificado: ''
+    });
+    await localforage.clear();
   };
 
   const { empresas, departamentos, ciclos, generos, leaders } = useMemo(() => {
@@ -133,7 +158,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [allData, filters]);
 
   return (
-    <AppContext.Provider value={{ filters, setFilters, filteredData, allData, headcounts, setHeadcounts, uploadData, clearData, lastUploadDate, isDataLoading, empresas, departamentos, ciclos, generos, leaders }}>
+    <AppContext.Provider value={{
+      filters,
+      setFilters,
+      filteredData,
+      allData,
+      headcounts,
+      updateHeadcounts,
+      formsLinks,
+      updateFormsLinks,
+      uploadData,
+      clearData,
+      lastUploadDate,
+      isDataLoading,
+      empresas,
+      departamentos,
+      ciclos,
+      generos,
+      leaders
+    }}>
       {children}
     </AppContext.Provider>
   );
