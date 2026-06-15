@@ -8,7 +8,11 @@ export default defineConfig(({mode}) => {
   return {
     base: './',
     build: {
-      outDir: 'dist',
+      outDir: '.',
+      emptyOutDir: false,
+      rollupOptions: {
+        input: 'src/index.html',
+      },
     },
     plugins: [react(), tailwindcss()],
     define: {
