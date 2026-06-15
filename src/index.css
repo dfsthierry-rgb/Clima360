@@ -26,3 +26,50 @@
     background: #475569;
   }
 }
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.8);
+  }
+
+  @media print {
+    @page { margin: 1cm; size: A4 landscape; }
+    
+    body {
+      background: white !important;
+      color: black !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .no-print {
+      display: none !important;
+    }
+    
+    /* Force backgrounds and border colors to print */
+    * {
+      color: black !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    svg text {
+      fill: black !important;
+    }
+    
+    /* Don't break charts or cards */
+    section, .break-inside-avoid {
+      page-break-inside: avoid;
+    }
+  }
+}

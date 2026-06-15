@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { Users } from 'lucide-react';
+import { Users, FileDown } from 'lucide-react';
 
 export function GlobalFilters() {
   const { filters, setFilters, filteredData, isDataLoading, ciclos, empresas } = useAppContext();
+  const navigate = useNavigate();
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -12,7 +14,7 @@ export function GlobalFilters() {
   if (isDataLoading) return null;
 
   return (
-    <header className="fixed top-0 left-[72px] right-0 h-20 bg-slate-900/60 backdrop-blur-md border-b border-slate-800/50 flex items-center px-8 gap-6 z-40">
+    <header className="fixed top-0 left-[72px] right-0 h-20 bg-slate-900/60 backdrop-blur-md border-b border-slate-800/50 flex items-center px-8 gap-6 z-40 no-print">
       <div className="flex gap-6 items-center">
         <FilterSelect 
           label="Ciclo"
@@ -27,16 +29,21 @@ export function GlobalFilters() {
           options={["Todos", ...empresas]}
           onChange={(v) => handleFilterChange('empresa', v)}
         />
-        <div className="h-8 w-px bg-slate-800"></div>
-        <FilterSelect 
-          label="Tipo de Pesquisa"
-          value={filters.tipoPesquisa}
-          options={["Ambas", "Anônima", "Identificada"]}
-          onChange={(v) => handleFilterChange('tipoPesquisa', v)}
-        />
       </div>
 
       <div className="ml-auto flex items-center gap-4">
+        <button 
+           onClick={() => window.open(`/relatorio?theme=light&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
+           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
+        >
+          <FileDown size={14} /> Relatório (Claro)
+        </button>
+        <button 
+           onClick={() => window.open(`/relatorio?theme=dark&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
+           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
+        >
+          <FileDown size={14} /> Relatório (Escuro)
+        </button>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
           <span className="text-xs font-bold text-emerald-400">{filteredData.length} Respostas Ativas</span>

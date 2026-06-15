@@ -1,19 +1,16 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import localforage from 'localforage';
 import { SurveyResponse, PILLARS, QUESTIONS } from '../data/mockData';
+import { db, auth } from '../lib/firebase';
+import { collection, doc, getDocs, setDoc, writeBatch, getDoc, onSnapshot, query, arrayUnion } from 'firebase/firestore';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 export interface Filters {
   ciclo: string;
   empresa: string;
   departamento: string;
   genero: string;
-  tipoPesquisa: string;
   lider: string;
-}
-
-export interface FormsLinks {
-  anonimo: string;
-  identificado: string;
 }
 
 interface AppContextType {
@@ -21,18 +18,15 @@ interface AppContextType {
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   filteredData: SurveyResponse[];
   allData: SurveyResponse[];
-  headcounts: Record<string, number>;
-  updateHeadcounts: (newHeadcounts: Record<string, number>) => Promise<void>;
-  formsLinks: FormsLinks;
-  updateFormsLinks: (links: FormsLinks) => Promise<void>;
   empresas: string[];
   departamentos: string[];
   ciclos: string[];
   generos: string[];
   leaders: string[];
-  uploadData: (newData: SurveyResponse[], newHeadcounts?: Record<string, number>) => Promise<void>;
+  uploadData: (newData: SurveyResponse[], filenames?: string[]) => Promise<void>;
   clearData: () => Promise<void>;
   lastUploadDate: string | null;
+  processedFilesGlobal: string[];
   isDataLoading: boolean;
 }
 
@@ -44,74 +38,86 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     empresa: 'Todos',
     departamento: 'Todos',
     genero: 'Todos',
-    tipoPesquisa: 'Ambas',
     lider: 'Todos',
   });
 
   const [allData, setAllData] = useState<SurveyResponse[]>([]);
-  const [headcounts, setHeadcounts] = useState<Record<string, number>>({});
-  const [formsLinks, setFormsLinks] = useState<FormsLinks>({
-    anonimo: '',
-    identificado: ''
-  });
   const [lastUploadDate, setLastUploadDate] = useState<string | null>(null);
+  const [processedFilesGlobal, setProcessedFilesGlobal] = useState<string[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
+  // Sync data with Firestore
   useEffect(() => {
-    async function loadData() {
-      try {
-        const storedData = await localforage.getItem<SurveyResponse[]>('survey_allData');
-        const storedHeadcounts = await localforage.getItem<Record<string, number>>('survey_headcounts');
-        const storedUploadDate = await localforage.getItem<string>('survey_lastUploadDate');
-        const storedFormsLinks = await localforage.getItem<FormsLinks>('survey_formsLinks');
-        
-        if (storedData) setAllData(storedData);
-        if (storedHeadcounts) setHeadcounts(storedHeadcounts);
-        if (storedUploadDate) setLastUploadDate(storedUploadDate);
-        if (storedFormsLinks) setFormsLinks(storedFormsLinks);
-      } catch (err) {
-        console.error("Error loading data from localforage", err);
-      } finally {
-        setIsDataLoading(false);
+    setIsDataLoading(true);
+
+    const unsubSurveys = onSnapshot(collection(db, 'surveys'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as SurveyResponse);
+      setAllData(data);
+      setIsDataLoading(false);
+    }, (error) => {
+      console.error("Error loading surveys", error);
+      setIsDataLoading(false);
+    });
+
+    const unsubConfig = onSnapshot(doc(db, 'config', 'global'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.lastUploadDate) setLastUploadDate(data.lastUploadDate);
+        if (data.processedFiles) setProcessedFilesGlobal(data.processedFiles);
       }
-    }
-    loadData();
+    });
+
+    return () => {
+      unsubSurveys();
+      unsubConfig();
+    };
   }, []);
 
-  const uploadData = async (newData: SurveyResponse[], newHeadcounts?: Record<string, number>) => {
-    const updatedData = [...allData, ...newData];
-    setAllData(updatedData);
-    await localforage.setItem('survey_allData', updatedData);
-
-    if (newHeadcounts) {
-      setHeadcounts(newHeadcounts);
-      await localforage.setItem('survey_headcounts', newHeadcounts);
+  const uploadData = async (newData: SurveyResponse[], filenames: string[] = []) => {
+    
+    // Process in batches of 500
+    for (let i = 0; i < newData.length; i += 500) {
+      const batch = writeBatch(db);
+      const chunk = newData.slice(i, i + 500);
+      chunk.forEach(res => {
+        const docRef = doc(db, 'surveys', res.id);
+        batch.set(docRef, res);
+      });
+      await batch.commit();
     }
 
     const dateStr = new Date().toLocaleString('pt-BR');
-    setLastUploadDate(dateStr);
-    await localforage.setItem('survey_lastUploadDate', dateStr);
-  };
-
-  const updateHeadcounts = async (newHeadcounts: Record<string, number>) => {
-    setHeadcounts(newHeadcounts);
-    await localforage.setItem('survey_headcounts', newHeadcounts);
-  };
-
-  const updateFormsLinks = async (links: FormsLinks) => {
-    setFormsLinks(links);
-    await localforage.setItem('survey_formsLinks', links);
+    
+    const configUpdate: any = { lastUploadDate: dateStr };
+    if (filenames.length > 0) {
+      configUpdate.processedFiles = arrayUnion(...filenames);
+    }
+    await setDoc(doc(db, 'config', 'global'), configUpdate, { merge: true });
   };
 
   const clearData = async () => {
-    setAllData([]);
-    setHeadcounts({});
-    setLastUploadDate(null);
-    setFormsLinks({
-      anonimo: '',
-      identificado: ''
-    });
-    await localforage.clear();
+    setIsDataLoading(true);
+    
+    // delete in batches
+    const snap = await getDocs(collection(db, 'surveys'));
+    let batch = writeBatch(db);
+    let count = 0;
+    
+    for (const document of snap.docs) {
+      batch.delete(document.ref);
+      count++;
+      if (count === 500) {
+        await batch.commit();
+        batch = writeBatch(db);
+        count = 0;
+      }
+    }
+    if (count > 0) {
+      await batch.commit();
+    }
+
+    await setDoc(doc(db, 'config', 'global'), { lastUploadDate: null, processedFiles: [] });
+    setIsDataLoading(false);
   };
 
   const { empresas, departamentos, ciclos, generos, leaders } = useMemo(() => {
@@ -151,32 +157,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (filters.departamento !== 'Todos' && res.department !== filters.departamento) return false;
       if (filters.genero !== 'Todos' && res.genero !== filters.genero) return false;
       if (filters.lider !== 'Todos' && res.leader !== filters.lider) return false;
-      if (filters.tipoPesquisa === 'Anônima' && !res.isAnonymous) return false;
-      if (filters.tipoPesquisa === 'Identificada' && res.isAnonymous) return false;
       return true;
     });
   }, [allData, filters]);
 
   return (
-    <AppContext.Provider value={{
-      filters,
-      setFilters,
-      filteredData,
-      allData,
-      headcounts,
-      updateHeadcounts,
-      formsLinks,
-      updateFormsLinks,
-      uploadData,
-      clearData,
-      lastUploadDate,
-      isDataLoading,
-      empresas,
-      departamentos,
-      ciclos,
-      generos,
-      leaders
-    }}>
+    <AppContext.Provider value={{ filters, setFilters, filteredData, allData, uploadData, clearData, lastUploadDate, processedFilesGlobal, isDataLoading, empresas, departamentos, ciclos, generos, leaders }}>
       {children}
     </AppContext.Provider>
   );

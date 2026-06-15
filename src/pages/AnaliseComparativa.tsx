@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
+import { ExportButtons } from '../components/ExportButtons';
 import { useAppContext } from '../context/AppContext';
 import { PILLARS, QUESTIONS } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -6,6 +7,7 @@ import { InfoTooltip } from '../components/ui/InfoTooltip';
 
 export function AnaliseComparativa() {
   const { filteredData, empresas, departamentos } = useAppContext();
+  const captureRef = useRef<HTMLDivElement>(null);
 
   const companyRankData = useMemo(() => {
     return empresas.map(empresa => {
@@ -62,8 +64,12 @@ export function AnaliseComparativa() {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-500 delay-100">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
+        <ExportButtons captureRef={captureRef} filename="analise-comparativa" />
+      </div>
+      <div ref={captureRef} className="flex flex-col gap-8 animate-in fade-in duration-500 delay-100 p-1 -m-1">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         
         {/* Ranking por Unidade */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
@@ -147,6 +153,7 @@ export function AnaliseComparativa() {
           </table>
         </div>
       </div>
+     </div>
     </div>
   );
 }

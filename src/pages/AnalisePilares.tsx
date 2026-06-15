@@ -1,14 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { ExportButtons } from '../components/ExportButtons';
 import { useAppContext } from '../context/AppContext';
 import { PILLARS, QUESTIONS } from '../data/mockData';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, LineChart, Line, CartesianGrid } from 'recharts';
 import { InfoTooltip } from '../components/ui/InfoTooltip';
 import { cn } from '../lib/utils';
 import { ChevronDown } from 'lucide-react';
 
 export function AnalisePilares() {
-  const { filteredData, filters, departamentos } = useAppContext();
+  const { allData, filters, ciclos, departamentos } = useAppContext();
+  const captureRef = useRef<HTMLDivElement>(null);
   const [activePillarId, setActivePillarId] = useState(PILLARS[0].id);
+  const [localDepartamento, setLocalDepartamento] = useState('Todos');
+  const [localTempoCasa, setLocalTempoCasa] = useState('Todos');
+
+  const temposCasa = useMemo(() => {
+    const t = new Set<string>();
+    allData.forEach(d => {
+      if (d.tempoCasa && d.tempoCasa.trim() !== '' && d.tempoCasa !== '-' && d.tempoCasa !== 'Não informado') {
+        t.add(d.tempoCasa);
+      }
+    });
+    return Array.from(t).sort();
+  }, [allData]);
+
+  const dataAnonimaEvolucao = useMemo(() => {
+    return allData.filter(d => {
+      if (!d.isAnonymous) return false;
+      if (filters.empresa !== 'Todos' && d.empresa !== filters.empresa) return false;
+      if (localDepartamento !== 'Todos' && d.department !== localDepartamento) return false;
+      if (localTempoCasa !== 'Todos' && d.tempoCasa !== localTempoCasa) return false;
+      return true;
+    });
+  }, [allData, filters, localDepartamento, localTempoCasa]);
 
   const activePillar = PILLARS.find(p => p.id === activePillarId)!;
   const pillarQuestions = QUESTIONS.filter(q => q.pillarId === activePillarId);
@@ -41,18 +65,21 @@ export function AnalisePilares() {
     let sum = 0;
     let countQuestions = 0;
     
-    // Determine which departments to show
-    let validDepts = departamentos;
-    // We already filter filteredData by global filters (Empresa etc.)
-    // So we just iterate through standard departments and see if they have data.
+    // Sort ciclos ascending for the chart evolution
+    const ciclosSorted = [...ciclos].sort((a,b) => a.localeCompare(b));
     
     const questionsOutput = pillarQuestions.map(q => {
-      const distGeral = processDistribution(filteredData, q.id);
-      
-      const deptsData = validDepts.map(dept => {
-        const deptFilter = filteredData.filter(d => d.department === dept);
-        return { id: dept, ...processDistribution(deptFilter, q.id) };
+      // Historical data by cycle
+      const ciclosData = ciclosSorted.map(c => {
+        const cFilter = dataAnonimaEvolucao.filter(d => d.yearLabel === c);
+        return { id: `Ciclo ${c}`, ...processDistribution(cFilter, q.id) };
       }).filter(d => d.total > 0);
+
+      const currentCycleFilter = filters.ciclo === 'Todos' 
+        ? dataAnonimaEvolucao 
+        : dataAnonimaEvolucao.filter(d => d.yearLabel === filters.ciclo);
+        
+      const distGeral = processDistribution(currentCycleFilter, q.id);
 
       if (distGeral.total > 0) {
         sum += distGeral.avg;
@@ -62,7 +89,7 @@ export function AnalisePilares() {
       return { 
         id: q.id, 
         text: q.text, 
-        chartData: [{ id: 'GERAL', ...distGeral }, ...deptsData],
+        chartData: ciclosData,
         avg: distGeral.avg 
       };
     });
@@ -70,8 +97,30 @@ export function AnalisePilares() {
       overallAvg: countQuestions > 0 ? sum / countQuestions : 0,
       questions: questionsOutput
     };
-  }, [filteredData, pillarQuestions, departamentos]);
+  }, [dataAnonimaEvolucao, pillarQuestions, ciclos, filters.ciclo]);
 
+  const pillarEvolutionData = useMemo(() => {
+    const ciclosSorted = [...ciclos].sort((a,b) => a.localeCompare(b));
+    return ciclosSorted.map(c => {
+      const cFilter = dataAnonimaEvolucao.filter(d => d.yearLabel === c);
+      const row: any = { ciclo: c };
+      let globalSum = 0; let globalCount = 0;
+      
+      PILLARS.forEach(pillar => {
+        let pillarSum = 0; let pillarCount = 0;
+        const pQuestions = QUESTIONS.filter(q => q.pillarId === pillar.id);
+        pQuestions.forEach(q => {
+           const dist = processDistribution(cFilter, q.id);
+           if (dist.total > 0) { pillarSum += dist.avg; pillarCount++; globalSum += dist.avg; globalCount++; }
+        });
+        row[pillar.name] = pillarCount > 0 ? Number((pillarSum / pillarCount).toFixed(2)) : null;
+      });
+      row['Geral'] = globalCount > 0 ? Number((globalSum / globalCount).toFixed(2)) : null;
+      return row;
+    }).filter(row => row['Geral'] !== null);
+  }, [dataAnonimaEvolucao, ciclos]);
+
+  const PILLAR_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#eab308'];
   const COLORS_STACK = ['#000000', '#64748b', '#94a3b8', '#ca8a04', '#854d0e']; // Darkened colors for a more serious tone like the image
 
   const renderCustomLabel = (props: any) => {
@@ -86,12 +135,87 @@ export function AnalisePilares() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <header>
-        <h1 className="text-4xl font-serif italic text-white leading-tight">Análise de Pilares</h1>
-        <p className="text-slate-400 text-sm mt-2 leading-relaxed">
-          Navegação profunda pelos componentes estruturais do clima corporativo. Resultados em porcentagem.
-        </p>
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
+        <div>
+          <h1 className="text-4xl font-serif italic text-white leading-tight">Análise de Pilares</h1>
+          <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+            Navegação profunda pelos componentes estruturais do clima corporativo. Resultados em porcentagem.
+          </p>
+        </div>
+        
+        <div className="flex flex-col md:flex-row items-end gap-3 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 min-w-[250px]">
+          <div className="flex flex-col md:flex-row gap-3 w-full">
+            <div className="flex flex-col w-full md:w-auto min-w-[150px]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 flex justify-between">
+                <span>Departamento</span>
+              </span>
+              <select
+                className="bg-slate-900 border border-slate-700/50 rounded-lg px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-indigo-500 transition-colors w-full"
+                value={localDepartamento}
+                onChange={(e) => setLocalDepartamento(e.target.value)}
+              >
+                <option value="Todos">Global (Todos Departament.)</option>
+                {departamentos.map((d, idx) => (
+                  <option key={idx} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex flex-col w-full md:w-auto min-w-[150px]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 flex justify-between">
+                <span>Tempo de Casa</span>
+              </span>
+              <select
+                className="bg-slate-900 border border-slate-700/50 rounded-lg px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-indigo-500 transition-colors w-full"
+                value={localTempoCasa}
+                onChange={(e) => setLocalTempoCasa(e.target.value)}
+              >
+                <option value="Todos">Global (Todos Tempos)</option>
+                {temposCasa.map((t, idx) => (
+                  <option key={idx} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="mt-2 md:mt-0 w-full md:w-auto">
+            <ExportButtons captureRef={captureRef} filename="analise-pilares" />
+          </div>
+        </div>
       </header>
+
+      <div ref={captureRef} className="flex flex-col gap-6 p-1 -m-1">
+      
+      {/* Evolução dos Pilares (Overview) */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 lg:p-8">
+        <h3 className="text-xl font-serif italic text-white mb-6">Comparativo de Notas (Evolução Ano a Ano)</h3>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={pillarEvolutionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} vertical={false} />
+              <XAxis dataKey="ciclo" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} tickMargin={10} axisLine={false} tickLine={false} />
+              <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} tickMargin={10} axisLine={false} tickLine={false} domain={[0, 5]} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                itemStyle={{ color: '#e2e8f0', fontSize: '12px' }}
+                labelStyle={{ color: '#94a3b8', marginBottom: '8px', fontWeight: 'bold' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} />
+              <Line type="monotone" dataKey="Geral" name="Geral" stroke="#f8fafc" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+              {PILLARS.map((p, idx) => (
+                <Line 
+                  key={p.id} 
+                  type="monotone" 
+                  dataKey={p.name} 
+                  name={p.name} 
+                  stroke={PILLAR_COLORS[idx % PILLAR_COLORS.length]} 
+                  strokeWidth={2} 
+                  dot={{ r: 3 }} 
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       {/* Pillar Selector Tabs */}
       <div className="flex flex-wrap gap-2 bg-slate-900/40 p-1.5 rounded-2xl w-fit border border-slate-800">
@@ -109,6 +233,23 @@ export function AnalisePilares() {
             {p.name}
           </button>
         ))}
+      </div>
+
+      {/* AI CHO Insight Box */}
+      <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-3xl p-6 lg:p-8 animate-in slide-in-from-bottom-4 duration-700 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <ChevronDown size={120} />
+        </div>
+        <h3 className="text-xl font-serif italic text-indigo-300 mb-4 flex items-center gap-3">
+          <span className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-black not-italic text-xs">AI</span>
+          Análise do Especialista CHO (Chief Happiness Officer)
+        </h3>
+        <p className="text-sm text-indigo-100/80 leading-relaxed max-w-4xl relative z-10">
+          <strong>Cenário do Pilar {activePillar.name}:</strong> Observamos que a aderência estrutural deste pilar está com média <strong>{currentScores.overallAvg.toFixed(2)}</strong> para o ciclo selecionado. 
+          Analisando os gráficos abaixo, é possível visualizar a evolução histórica ciclo a ciclo. Note como as ações aplicadas impactam na transição de detratores para neutros e promotores ao longo do tempo.
+          <br /><br />
+          Recomendo verificarmos se houve uma evolução positiva dos promotores (barras verdes) nas perguntas chave abaixo. Se um ciclo regredir, precisaremos montar planos de ação táticos rápidos. É fundamental manter a transparência das entregas!
+        </p>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
@@ -133,8 +274,8 @@ export function AnalisePilares() {
         {/* Stacked Bars for Questions */}
         <div className="col-span-12 lg:col-span-9 flex flex-col gap-6">
           {currentScores.questions.map((q, idx) => {
-            // dynamic height based on number of bars
-            const height = 60 + q.chartData.length * 30;
+            // dynamic height based on number of bars (5 bars per group now)
+            const height = 80 + q.chartData.length * 90;
 
             return (
               <div key={q.id} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 relative overflow-visible">
@@ -144,32 +285,32 @@ export function AnalisePilares() {
                 </div>
 
                 {/* Stacked Bar Distribution */}
-                <div className="w-full" style={{ height: `${height}px` }}>
+                <div className="w-full" style={{ height: `${80 + q.chartData.length * 50}px` }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={q.chartData} layout="vertical" margin={{ top: 0, right: 0, left: 160, bottom: 0 }} barCategoryGap="20%">
+                    <BarChart data={q.chartData} layout="vertical" margin={{ top: 0, right: 30, left: 160, bottom: 0 }} barCategoryGap="20%">
                       <XAxis type="number" hide domain={[0, 100]} />
                       <YAxis type="category" dataKey="id" tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 'bold' }} axisLine={false} tickLine={false} width={150} />
                       <Tooltip 
-                        cursor={false} 
+                        cursor={{fill: 'rgba(255,255,255,0.05)'}} 
                         formatter={(val: number) => [`${val}%`, '']}
-                        labelFormatter={(label) => `Grupo: ${label}`}
+                        labelFormatter={(label) => `${label}`}
                         contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '12px', fontSize: '12px' }} 
                       />
-                      <Legend verticalAlign="top" height={36} iconType="square" wrapperStyle={{ fontSize: '10px', color: '#94a3b8', paddingBottom: '10px' }} />
-                      <Bar dataKey="1 (Nunca/Discordo Totalmente)" stackId="a" fill={COLORS_STACK[0]} radius={0}>
-                         <LabelList content={renderCustomLabel} />
+                      <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#94a3b8', paddingBottom: '10px' }} />
+                      <Bar dataKey="1 (Nunca/Discordo Totalmente)" stackId="a" fill="#ef4444" radius={[4, 0, 0, 4]}>
+                         <LabelList dataKey="1 (Nunca/Discordo Totalmente)" content={renderCustomLabel} />
                       </Bar>
-                      <Bar dataKey="2 (Raramente)" stackId="a" fill={COLORS_STACK[1]} radius={0}>
-                         <LabelList content={renderCustomLabel} />
+                      <Bar dataKey="2 (Raramente)" stackId="a" fill="#f97316">
+                         <LabelList dataKey="2 (Raramente)" content={renderCustomLabel} />
                       </Bar>
-                      <Bar dataKey="3 (Às Vezes/Neutro)" stackId="a" fill={COLORS_STACK[2]} radius={0}>
-                         <LabelList content={renderCustomLabel} />
+                      <Bar dataKey="3 (Às Vezes/Neutro)" stackId="a" fill="#0ea5e9">
+                         <LabelList dataKey="3 (Às Vezes/Neutro)" content={renderCustomLabel} />
                       </Bar>
-                      <Bar dataKey="4 (Frequentemente)" stackId="a" fill={COLORS_STACK[3]} radius={0}>
-                         <LabelList content={renderCustomLabel} />
+                      <Bar dataKey="4 (Frequentemente)" stackId="a" fill="#8b5cf6">
+                         <LabelList dataKey="4 (Frequentemente)" content={renderCustomLabel} />
                       </Bar>
-                      <Bar dataKey="5 (Sempre/Concordo Totalmente)" stackId="a" fill={COLORS_STACK[4]} radius={0}>
-                         <LabelList content={renderCustomLabel} />
+                      <Bar dataKey="5 (Sempre/Concordo Totalmente)" stackId="a" fill="#10b981" radius={[0, 4, 4, 0]}>
+                         <LabelList dataKey="5 (Sempre/Concordo Totalmente)" content={renderCustomLabel} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -178,6 +319,7 @@ export function AnalisePilares() {
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

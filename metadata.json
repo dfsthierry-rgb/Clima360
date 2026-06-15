@@ -1,6 +1,8 @@
 {
-  "name": "",
-  "description": "",
+  "name": "CM Clima Mesh",
+  "description": "Dashboard de pesquisa de clima organizacional",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

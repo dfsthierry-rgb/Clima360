@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
+import { ExportButtons } from '../components/ExportButtons';
 import { useAppContext } from '../context/AppContext';
 import { QUESTIONS } from '../data/mockData';
 import { History } from 'lucide-react';
@@ -6,20 +7,22 @@ import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 import { InfoTooltip } from '../components/ui/InfoTooltip';
 
 export function SeriesHistoricas() {
-  const { allData, filters, ciclos } = useAppContext();
+  const { allData, filters, ciclos, departamentos } = useAppContext();
+  const captureRef = useRef<HTMLDivElement>(null);
+  const [localDepartamento, setLocalDepartamento] = useState('Todos');
 
   // For historical, we ignore the Ciclo filter, but use others
   const filteredData = useMemo(() => {
     return allData.filter(res => {
       // Ignore ciclo filter here
       if (filters.empresa !== 'Todos' && res.empresa !== filters.empresa) return false;
-      if (filters.departamento !== 'Todos' && res.department !== filters.departamento) return false;
+      if (localDepartamento !== 'Todos' && res.department !== localDepartamento) return false;
       if (filters.genero !== 'Todos' && res.genero !== filters.genero) return false;
       if (filters.tipoPesquisa === 'Anônima' && !res.isAnonymous) return false;
       if (filters.tipoPesquisa === 'Identificada' && res.isAnonymous) return false;
       return true;
     });
-  }, [allData, filters]);
+  }, [allData, filters, localDepartamento]);
 
   const sortedCiclos = useMemo(() => [...ciclos].reverse(), [ciclos]);
 
@@ -51,13 +54,31 @@ export function SeriesHistoricas() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 delay-300">
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 overflow-hidden">
-        <div className="mb-8">
-          <h2 className="text-4xl font-serif italic text-white leading-tight flex items-center gap-3">
-            Análise Temporal Profunda
-            <InfoTooltip text="Acompanhamento evolutivo das métricas ao longo dos ciclos das pesquisas (histórico de anos anteriores). Os dados aqui não respeitam o filtro global de Ciclo." className="ml-1 text-slate-400" />
-          </h2>
-          <p className="text-sm text-slate-400 mt-2 leading-relaxed">Comparativo de pilares e perguntas ao longo dos ciclos aplicáveis aos filtros demográficos atuais</p>
+      <div className="flex justify-end w-full">
+        <ExportButtons captureRef={captureRef} filename="series-historicas" />
+      </div>
+      <div ref={captureRef} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 overflow-hidden p-1 -m-1">
+        <div className="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div>
+            <h2 className="text-4xl font-serif italic text-white leading-tight flex items-center gap-3">
+              Análise Temporal Profunda
+              <InfoTooltip text="Acompanhamento evolutivo das métricas ao longo dos ciclos das pesquisas (histórico de anos anteriores). Os dados aqui não respeitam o filtro global de Ciclo." className="ml-1 text-slate-400" />
+            </h2>
+            <p className="text-sm text-slate-400 mt-2 leading-relaxed">Comparativo de pilares e perguntas ao longo dos ciclos aplicáveis aos filtros demográficos atuais</p>
+          </div>
+          <div className="flex flex-col min-w-[200px] bg-slate-900/60 border border-slate-800 p-3 rounded-xl shadow-lg">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-1">Filtrar por Departamento</span>
+            <select 
+              value={localDepartamento}
+              onChange={(e) => setLocalDepartamento(e.target.value)}
+              className="bg-transparent text-sm font-semibold border-none outline-none focus:ring-0 p-0 text-white appearance-none cursor-pointer"
+            >
+              <option value="Todos" className="bg-slate-900">Todos os Departamentos</option>
+              {departamentos.map(dep => (
+                <option key={dep} value={dep} className="bg-slate-900">{dep}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto pb-4">

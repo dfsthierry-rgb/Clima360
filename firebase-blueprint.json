@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "SurveyResponse": {
+      "title": "SurveyResponse",
+      "description": "An individual survey response",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "yearLabel": { "type": "string" },
+        "isAnonymous": { "type": "boolean" },
+        "empresa": { "type": "string" },
+        "department": { "type": "string" },
+        "genero": { "type": "string" },
+        "idade": { "type": "string" },
+        "tempoCasa": { "type": "string" },
+        "leader": { "type": "string" },
+        "escolaridade": { "type": "string" },
+        "cursoDesejado": { "type": "string" },
+        "moradia": { "type": "string" },
+        "computador": { "type": "string" },
+        "internet": { "type": "string" },
+        "estudandoAtualmente": { "type": "string" },
+        "cursoAtual": { "type": "string" },
+        "estadoCivil": { "type": "string" },
+        "possuiFilhos": { "type": "string" },
+        "qtdFilhos": { "type": "string" },
+        "filhosMenor4": { "type": "string" },
+        "filhos5a11": { "type": "string" },
+        "filhos12a18": { "type": "string" },
+        "filhosMaior18": { "type": "string" },
+        "outrosDependentes": { "type": "string" },
+        "rendaFamiliar": { "type": "string" },
+        "harmoniaLar": { "type": "string" },
+        "rendaSupre": { "type": "string" },
+        "gostoFicarCasa": { "type": "string" },
+        "ajudaCasa": { "type": "string" },
+        "familiaHorasVagas": { "type": "string" },
+        "atualizadoNoticias": { "type": "string" },
+        "gostoEstudar": { "type": "string" },
+        "atuoAreaFormado": { "type": "string" },
+        "horasVagas": { "type": "string" },
+        "maiorSonho": { "type": "string" },
+        "proximoPassoSonho": { "type": "string" },
+        "motivoPermanencia": { "type": "string" },
+        "oQueTornaBomLugar": { "type": "string" },
+        "oQuePodeMelhorar": { "type": "string" },
+        "ondeQuerEstar5Anos": { "type": "string" },
+        "nomeFuncionario": { "type": "string" },
+        "scores": { "type": "object" },
+        "enpsScore": { "type": "number" },
+        "comment": { "type": "string" },
+        "sentiment": { "type": "string" }
+      }
+    },
+    "GlobalState": {
+      "title": "Global State",
+      "type": "object",
+      "description": "Global config like headcounts",
+      "properties": {
+        "headcounts": { "type": "object" },
+        "lastUploadDate": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "surveys": {
+      "schema": { "$ref": "#/entities/SurveyResponse" },
+      "description": "All survey responses"
+    },
+    "config": {
+      "schema": { "$ref": "#/entities/GlobalState" },
+      "description": "Global config state"
+    }
+  }
+}
