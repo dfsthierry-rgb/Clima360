@@ -55,7 +55,7 @@ function PrintContent() {
   if (!readyToPrint) return null;
 
   return (
-    <div className={`min-h-screen p-8 ${isLight ? 'bg-slate-50 text-slate-900 print-report' : 'bg-[#0b0f19] text-slate-100'}`}>
+    <div className={`min-h-screen p-8 ${isLight ? 'bg-[#BFBFBF] text-slate-900 print-report' : 'bg-[#0b0f19] text-slate-100'}`}>
        {/* Inject print-specific overrides directly */}
        <style dangerouslySetInnerHTML={{__html: `
          @media print {
@@ -74,14 +74,14 @@ function PrintContent() {
             }
 
             ${isLight ? `
-            body { background: #f8fafc !important; }
+            body { background: #BFBFBF !important; }
             [class*="bg-slate-8"], [class*="bg-slate-9"], [class*="bg-[#"], [class*="bg-black"], [class*="bg-indigo-9"], [class*="bg-["] {
               background-color: white !important;
               border-color: #e2e8f0 !important;
               box-shadow: none !important;
             }
-            [class*="text-slate-1"], [class*="text-slate-2"], [class*="text-slate-3"], [class*="text-slate-4"], [class*="text-slate-5"], [class*="text-white"], [class*="text-gray-"] {
-              color: #0f172a !important;
+            [class*="text-slate-1"], [class*="text-slate-2"], [class*="text-slate-3"], [class*="text-slate-4"], [class*="text-slate-5"], [class*="text-white"], [class*="text-gray-"], [class*="text-indigo-1"], [class*="text-indigo-2"], [class*="text-indigo-3"], [class*="text-teal-1"], [class*="text-teal-2"], [class*="text-teal-3"], [class*="text-rose-1"], [class*="text-rose-2"], [class*="text-rose-3"], [class*="text-amber-1"], [class*="text-amber-2"], [class*="text-amber-3"], [class*="text-emerald-1"], [class*="text-emerald-2"], [class*="text-emerald-3"], [class*="text-blue-1"], [class*="text-blue-2"], [class*="text-blue-3"], [class*="text-purple-1"], [class*="text-purple-2"], [class*="text-purple-3"], [class*="text-cyan-1"], [class*="text-cyan-2"], [class*="text-cyan-3"] {
+              color: #1e293b !important;
             }
             .text-indigo-400 { color: #4f46e5 !important; }
             .text-rose-400 { color: #e11d48 !important; }
@@ -105,8 +105,8 @@ function PrintContent() {
             border-color: #e2e8f0 !important;
             box-shadow: none !important;
          }
-         .print-report [class*="text-slate-1"], .print-report [class*="text-slate-2"], .print-report [class*="text-slate-3"], .print-report [class*="text-slate-4"], .print-report [class*="text-slate-5"], .print-report [class*="text-white"], .print-report [class*="text-gray-"] {
-            color: #0f172a !important;
+         .print-report [class*="text-slate-1"], .print-report [class*="text-slate-2"], .print-report [class*="text-slate-3"], .print-report [class*="text-slate-4"], .print-report [class*="text-slate-5"], .print-report [class*="text-white"], .print-report [class*="text-gray-"], .print-report [class*="text-indigo-1"], .print-report [class*="text-indigo-2"], .print-report [class*="text-indigo-3"], .print-report [class*="text-teal-1"], .print-report [class*="text-teal-2"], .print-report [class*="text-teal-3"], .print-report [class*="text-rose-1"], .print-report [class*="text-rose-2"], .print-report [class*="text-rose-3"], .print-report [class*="text-amber-1"], .print-report [class*="text-amber-2"], .print-report [class*="text-amber-3"], .print-report [class*="text-emerald-1"], .print-report [class*="text-emerald-2"], .print-report [class*="text-emerald-3"], .print-report [class*="text-blue-1"], .print-report [class*="text-blue-2"], .print-report [class*="text-blue-3"], .print-report [class*="text-purple-1"], .print-report [class*="text-purple-2"], .print-report [class*="text-purple-3"], .print-report [class*="text-cyan-1"], .print-report [class*="text-cyan-2"], .print-report [class*="text-cyan-3"] {
+            color: #1e293b !important;
          }
          .print-report .recharts-text {
             fill: #0f172a !important;
