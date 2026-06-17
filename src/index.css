@@ -2,38 +2,74 @@
 
 @theme {
   --color-slate-950: #0b0f19;
-  --color-deep-blue: #0b0f19;
 }
 
 @layer base {
   body {
     @apply bg-[#0b0f19] text-slate-200 antialiased selection:bg-indigo-500/30;
   }
+
+  /* Custom Scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
 }
 
 @layer utilities {
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.5); border-radius: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.8); }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.8);
+  }
 
   @media print {
     @page { margin: 1cm; size: A4 landscape; }
-    body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .no-print { display: none !important; }
-    * { border-color: #e2e8f0 !important; }
-    svg text { fill: black !important; }
-    .print-section { page-break-before: always; break-before: page; padding-top: 20px; }
-    .print-section:first-child { page-break-before: auto; break-before: auto; }
     
-    .print-report { background: white !important; color: black !important; }
-    .print-report .bg-slate-900\/40, .print-report .bg-slate-800, .print-report .bg-slate-900, .print-report .bg-deep-blue {
-      background-color: white !important; border: 1px solid #e2e8f0 !important; box-shadow: none !important;
+    body {
+      background: white !important;
+      color: black !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    .print-report .text-slate-100, .print-report .text-slate-200, .print-report .text-slate-300, .print-report .text-slate-400, .print-report .text-slate-500, .print-report .text-white {
-      color: #0f172a !important;
+    
+    .no-print {
+      display: none !important;
     }
-    .print-report .recharts-text { fill: #0f172a !important; }
-    section, .break-inside-avoid { page-break-inside: avoid; }
+    
+    /* Force backgrounds and border colors to print */
+    * {
+      color: black !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    svg text {
+      fill: black !important;
+    }
+    
+    /* Don't break charts or cards */
+    section, .break-inside-avoid {
+      page-break-inside: avoid;
+    }
   }
 }
