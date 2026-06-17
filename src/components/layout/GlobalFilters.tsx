@@ -12,9 +12,10 @@ export function GlobalFilters() {
   };
 
   const openReport = (theme: 'light' | 'dark') => {
-    const baseUrl = window.location.href.split('#')[0];
-    const sep = baseUrl.endsWith('/') ? '' : '/';
-    const url = `${baseUrl}${sep}#/relatorio?theme=${theme}&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`;
+    const origin = window.location.origin;
+    const path = window.location.pathname;
+    const base = path.endsWith('/') ? path : path + '/';
+    const url = `${origin}${base}#/relatorio?theme=${theme}&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`;
     window.open(url, '_blank');
   };
 

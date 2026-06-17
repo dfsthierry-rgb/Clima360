@@ -9,9 +9,6 @@ export default defineConfig(({mode}) => {
     base: './',
     build: {
       outDir: 'dist',
-      rollupOptions: {
-        input: 'src/index.html',
-      },
     },
     plugins: [react(), tailwindcss()],
     define: {
