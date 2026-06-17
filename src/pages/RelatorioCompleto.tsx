@@ -55,7 +55,7 @@ function PrintContent() {
   if (!readyToPrint) return null;
 
   return (
-    <div className={`min-h-screen p-8 ${isLight ? 'bg-white text-black print-report' : 'bg-[#0b0f19] text-slate-100'}`}>
+    <div className={`min-h-screen p-8 ${isLight ? 'bg-slate-50 text-slate-900 print-report' : 'bg-[#0b0f19] text-slate-100'}`}>
        {/* Inject print-specific overrides directly */}
        <style dangerouslySetInnerHTML={{__html: `
          @media print {
@@ -74,13 +74,13 @@ function PrintContent() {
             }
 
             ${isLight ? `
-            body { background: white !important; }
-            .bg-slate-900\\/40, .bg-slate-800, .bg-slate-900, .bg-\\[\\#0b0f19\\] {
+            body { background: #f8fafc !important; }
+            [class*="bg-slate-8"], [class*="bg-slate-9"], [class*="bg-[#"], [class*="bg-black"], [class*="bg-indigo-9"], [class*="bg-["] {
               background-color: white !important;
-              border: 1px solid #e2e8f0 !important;
+              border-color: #e2e8f0 !important;
               box-shadow: none !important;
             }
-            .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500, .text-white {
+            [class*="text-slate-1"], [class*="text-slate-2"], [class*="text-slate-3"], [class*="text-slate-4"], [class*="text-slate-5"], [class*="text-white"], [class*="text-gray-"] {
               color: #0f172a !important;
             }
             .text-indigo-400 { color: #4f46e5 !important; }
@@ -92,6 +92,7 @@ function PrintContent() {
             .text-purple-400 { color: #9333ea !important; }
             .text-blue-400 { color: #2563eb !important; }
             .recharts-text { fill: #0f172a !important; }
+            .recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line { stroke: #e2e8f0 !important; }
             ` : `
             body { background: #0b0f19 !important; }
             `}
@@ -99,15 +100,27 @@ function PrintContent() {
          
          /* Also apply these styles for the screen view so user sees the preview nicely (Light Theme only) */
          ${isLight ? `
-         .print-report .bg-slate-900\\/40, .print-report .bg-slate-800, .print-report .bg-slate-900 {
+         .print-report [class*="bg-slate-8"], .print-report [class*="bg-slate-9"], .print-report [class*="bg-[#"], .print-report [class*="bg-black"], .print-report [class*="bg-indigo-9"], .print-report [class*="bg-["] {
             background-color: white !important;
-            border: 1px solid #e2e8f0 !important;
+            border-color: #e2e8f0 !important;
+            box-shadow: none !important;
          }
-         .print-report .text-slate-100, .print-report .text-slate-200, .print-report .text-slate-300, .print-report .text-slate-400, .print-report .text-slate-500 {
+         .print-report [class*="text-slate-1"], .print-report [class*="text-slate-2"], .print-report [class*="text-slate-3"], .print-report [class*="text-slate-4"], .print-report [class*="text-slate-5"], .print-report [class*="text-white"], .print-report [class*="text-gray-"] {
             color: #0f172a !important;
          }
          .print-report .recharts-text {
             fill: #0f172a !important;
+         }
+         .print-report .text-indigo-400 { color: #4f46e5 !important; }
+         .print-report .text-rose-400 { color: #e11d48 !important; }
+         .print-report .text-emerald-400 { color: #10b981 !important; }
+         .print-report .text-amber-400 { color: #d97706 !important; }
+         .print-report .text-teal-400 { color: #0d9488 !important; }
+         .print-report .text-cyan-400 { color: #0891b2 !important; }
+         .print-report .text-purple-400 { color: #9333ea !important; }
+         .print-report .text-blue-400 { color: #2563eb !important; }
+         .print-report .recharts-cartesian-grid-horizontal line, .print-report .recharts-cartesian-grid-vertical line {
+            stroke: #e2e8f0 !important;
          }
          ` : ''}
        `}} />
