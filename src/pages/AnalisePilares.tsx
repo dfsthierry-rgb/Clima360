@@ -67,19 +67,12 @@ export function AnalisePilares() {
     
     // Sort ciclos ascending for the chart evolution
     const ciclosSorted = [...ciclos].sort((a,b) => a.localeCompare(b));
-    const cycleAvgs: Record<string, { sum: number, count: number }> = {};
-    ciclosSorted.forEach(c => cycleAvgs[c] = { sum: 0, count: 0 });
     
     const questionsOutput = pillarQuestions.map(q => {
       // Historical data by cycle
       const ciclosData = ciclosSorted.map(c => {
         const cFilter = dataAnonimaEvolucao.filter(d => d.yearLabel === c);
-        const dist = processDistribution(cFilter, q.id);
-        if (dist.total > 0) {
-          cycleAvgs[c].sum += dist.avg;
-          cycleAvgs[c].count++;
-        }
-        return { id: `Ciclo ${c} | Média: ${dist.avg.toFixed(1)}`, cycleName: c, ...dist };
+        return { id: `Ciclo ${c}`, ...processDistribution(cFilter, q.id) };
       }).filter(d => d.total > 0);
 
       const currentCycleFilter = filters.ciclo === 'Todos' 
@@ -100,15 +93,8 @@ export function AnalisePilares() {
         avg: distGeral.avg 
       };
     });
-
-    const historicalOverall = ciclosSorted.map(c => ({
-      cycle: c,
-      avg: cycleAvgs[c].count > 0 ? cycleAvgs[c].sum / cycleAvgs[c].count : 0
-    })).filter(h => h.avg > 0);
-
     return { 
       overallAvg: countQuestions > 0 ? sum / countQuestions : 0,
-      historicalOverall,
       questions: questionsOutput
     };
   }, [dataAnonimaEvolucao, pillarQuestions, ciclos, filters.ciclo]);
@@ -136,37 +122,6 @@ export function AnalisePilares() {
 
   const PILLAR_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#eab308'];
   const COLORS_STACK = ['#000000', '#64748b', '#94a3b8', '#ca8a04', '#854d0e']; // Darkened colors for a more serious tone like the image
-
-  const CustomYAxisTick = (props: any) => {
-    const { x, y, payload } = props;
-    const val = payload.value;
-    
-    if (typeof val === 'string' && val.includes(' | Média: ')) {
-      const [name, avgPart] = val.split(' | Média: ');
-      const numAvg = parseFloat(avgPart);
-      const avgColor = numAvg >= 4 ? '#34d399' : numAvg >= 3 ? '#facc15' : '#fb7185';
-      
-      return (
-        <g transform={`translate(${x},${y})`}>
-          <text x={-45} y={0} dy={4} textAnchor="end" fill="#cbd5e1" fontSize={11} fontWeight="bold">
-            {name}
-          </text>
-          <rect x={-40} y={-8} width={36} height={16} fill="#0f172a" rx={4} stroke={avgColor} strokeWidth={1} />
-          <text x={-22} y={0} dy={4} textAnchor="middle" fill={avgColor} fontSize={10} fontWeight="bold">
-            {avgPart}
-          </text>
-        </g>
-      );
-    }
-    
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={4} textAnchor="end" fill="#cbd5e1" fontSize={11} fontWeight="bold">
-          {val}
-        </text>
-      </g>
-    );
-  };
 
   const renderCustomLabel = (props: any) => {
     const { x, y, width, height, value } = props;
@@ -312,20 +267,7 @@ export function AnalisePilares() {
                <span className="text-5xl font-light text-emerald-400">{currentScores.overallAvg.toFixed(1)}</span>
              </div>
              
-             <p className="text-xs text-slate-500 font-medium mb-6">Meta Desejada: <span className="text-slate-300">4.5</span></p>
-
-             {/* Historical Overall Scores */}
-             <div className="w-full mt-4 border-t border-slate-800/50 pt-4 flex flex-col gap-2">
-               <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">Histórico por Ciclo</span>
-               {currentScores.historicalOverall.map(h => (
-                 <div key={h.cycle} className="flex justify-between items-center text-xs">
-                   <span className="text-slate-400 font-medium">{h.cycle}</span>
-                   <span className={cn("font-bold", h.avg >= 4 ? "text-emerald-400" : h.avg >= 3 ? "text-yellow-400" : "text-rose-400")}>
-                     {h.avg.toFixed(2)}
-                   </span>
-                 </div>
-               ))}
-             </div>
+             <p className="text-xs text-slate-500 font-medium">Meta Desejada: <span className="text-slate-300">4.5</span></p>
           </div>
         </div>
 
@@ -345,13 +287,13 @@ export function AnalisePilares() {
                 {/* Stacked Bar Distribution */}
                 <div className="w-full" style={{ height: `${80 + q.chartData.length * 50}px` }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={q.chartData} layout="vertical" margin={{ top: 0, right: 30, left: 190, bottom: 0 }} barCategoryGap="20%">
+                    <BarChart data={q.chartData} layout="vertical" margin={{ top: 0, right: 30, left: 160, bottom: 0 }} barCategoryGap="20%">
                       <XAxis type="number" hide domain={[0, 100]} />
-                      <YAxis type="category" dataKey="id" tick={<CustomYAxisTick />} axisLine={false} tickLine={false} width={180} />
+                      <YAxis type="category" dataKey="id" tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 'bold' }} axisLine={false} tickLine={false} width={150} />
                       <Tooltip 
                         cursor={{fill: 'rgba(255,255,255,0.05)'}} 
                         formatter={(val: number) => [`${val}%`, '']}
-                        labelFormatter={(label) => typeof label === 'string' ? label.split(' | ')[0] : label}
+                        labelFormatter={(label) => `${label}`}
                         contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '12px', fontSize: '12px' }} 
                       />
                       <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#94a3b8', paddingBottom: '10px' }} />
