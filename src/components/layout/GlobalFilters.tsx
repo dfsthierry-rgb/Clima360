@@ -33,13 +33,21 @@ export function GlobalFilters() {
 
       <div className="ml-auto flex items-center gap-4">
         <button 
-           onClick={() => window.open(window.location.pathname + `#/relatorio?theme=light&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
+           onClick={() => {
+             const baseUrl = window.location.origin + window.location.pathname;
+             const url = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+             window.open(`${url}#/relatorio?theme=light&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank');
+           }}
            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
         >
           <FileDown size={14} /> Relatório (Claro)
         </button>
         <button 
-           onClick={() => window.open(window.location.pathname + `#/relatorio?theme=dark&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
+           onClick={() => {
+             const baseUrl = window.location.origin + window.location.pathname;
+             const url = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+             window.open(`${url}#/relatorio?theme=dark&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank');
+           }}
            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
         >
           <FileDown size={14} /> Relatório (Escuro)
