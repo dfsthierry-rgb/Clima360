@@ -163,7 +163,7 @@ export function PainelExecutivo() {
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 w-full">
         <header>
-          <h1 className="text-4xl font-serif italic text-white leading-tight">Clima 360°</h1>
+          <h1 className="text-4xl font-serif italic text-white leading-tight">Relatório Completo de Pesquisa de Clima Grupo Central Mesh</h1>
           <p className="text-slate-400 text-sm mt-2 leading-relaxed">Inteligência estratégica consolidada do <span className="text-indigo-400 font-medium">{filters.empresa === 'Todos' ? 'Grupo Central Mesh' : filters.empresa}</span>.</p>
         </header>
         <ExportButtons captureRef={captureRef} filename="painel-executivo" />
