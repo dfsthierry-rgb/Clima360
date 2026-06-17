@@ -70,16 +70,14 @@ function getFaixaEtaria(idadeStr: string): string {
 
 function analyzeThemes(texts: string[]): string[] {
   const groups: Record<string, string[]> = {
-    'Reconhecimento & Salário': ['salário', 'salario', 'pagamento', 'benefício', 'beneficio', 'dinheiro', 'va', 'vale', 'vr', 'remuneração', 'reconhecimento', 'plr', 'plano', 'valorização', 'reconhecer'],
-    'Clima & Coleguismo': ['ambiente', 'clima', 'equipe', 'colegas', 'amigos', 'amizade', 'pessoas', 'clima bom', 'união', 'uniao', 'companheirismo', 'relacionamento'],
-    'Estrutura Física & Ferramentas': ['banheiro', 'vestiário', 'calor', 'equipamento', 'cadeira', 'ar condicionado', 'estrutura', 'computador', 'sistema', 'ferramenta', 'limpeza', 'refeitório', 'infraestrutura'],
-    'Liderança & Direcionamento': ['gestor', 'líder', 'lider', 'chefe', 'liderança', 'gestão', 'feedback', 'diretoria', 'coordenação', 'gerência', 'comunicação', 'direção'],
+    'Reconhecimento & Salário': ['salário', 'salario', 'pagamento', 'benefício', 'beneficio', 'dinheiro', 'va', 'vale', 'vr', 'remuneração', 'reconhecimento', 'plr', 'plano'],
+    'Clima & Coleguismo': ['ambiente', 'clima', 'equipe', 'colegas', 'amigos', 'amizade', 'pessoas', 'clima bom', 'união', 'uniao', 'companheirismo'],
+    'Estrutura Física & Ferramentas': ['banheiro', 'vestiário', 'calor', 'equipamento', 'cadeira', 'ar condicionado', 'estrutura', 'computador', 'sistema', 'ferramenta', 'limpeza', 'refeitório'],
+    'Liderança & Direcionamento': ['gestor', 'líder', 'lider', 'chefe', 'liderança', 'gestão', 'feedback', 'diretoria', 'coordenação', 'gerência', 'comunicação'],
     'Crescimento & Oportunidades': ['carreira', 'promoção', 'crescimento', 'estudo', 'curso', 'treinamento', 'pdi', 'oportunidade', 'desafios', 'desenvolvimento', 'cargo'],
     'Flexibilidade & Equilíbrio': ['horário', 'escala', 'flexibilidade', 'folga', 'home office', 'trabalho em casa', 'vida pessoal', 'híbrido', 'qualidade de vida'],
-    'Segurança & Estabilidade': ['estabilidade', 'segurança', 'sustento', 'manter', 'emprego', 'família', 'familia', 'pagamento em dia', 'confiança'],
-    'Burocracia & Sobrecarga': ['processos', 'organização', 'tarefas', 'burocracia', 'pressão', 'cobrança', 'sobrecarga', 'demanda', 'fluxo', 'rotina', 'excesso', 'estresse', 'cansativo'],
-    'Afinidade com a Função': ['gostar', 'gosto', 'gostam', 'gostando', 'gostodo', 'amo', 'amar', 'considerado', 'atividade', 'trabalho', 'função', 'operacional'],
-    'Autonomia & Confiança': ['autonomia', 'confiança', 'liberdade', 'decisão', 'ouvido']
+    'Segurança & Estabilidade': ['estabilidade', 'segurança', 'sustento', 'manter', 'emprego', 'família', 'pagamento em dia', 'confiança'],
+    'Burocracia & Sobrecarga': ['processos', 'organização', 'tarefas', 'burocracia', 'pressão', 'cobrança', 'sobrecarga', 'demanda', 'fluxo', 'rotina', 'excesso', 'estresse']
   };
 
   const counts: Record<string, number> = {};
@@ -98,8 +96,7 @@ function analyzeThemes(texts: string[]): string[] {
 
     if (!matched && lower.length > 5) {
       const words = lower.split(/[\s,.;]+/);
-      const stopWords = ['ficar', 'para', 'fazer', 'muito', 'sobre', 'estar', 'porque', 'quando', 'primeiramente', 'primeiro', 'acredito', 'sempre', 'também', 'tambem', 'trocar', 'melhorar', 'algumas', 'alguns', 'muitas', 'certas', 'coisas', 'dentro', 'apenas', 'assim', 'mesmo', 'ainda', 'minha', 'minhas', 'nosso', 'nossos', 'bastante', 'realmente', 'considerado', 'devido'];
-      const firstWord = words.find(w => w.length > 5 && !stopWords.includes(w));
+      const firstWord = words.find(w => w.length > 5 && !['ficar', 'para', 'fazer', 'muito', 'sobre', 'estar', 'porque', 'quando', 'primeiramente', 'primeiro', 'acredito', 'sempre', 'também', 'tambem', 'trocar', 'melhorar', 'algumas', 'alguns', 'muitas', 'certas', 'coisas', 'dentro', 'apenas', 'assim'].includes(w));
       if (firstWord) {
         counts[firstWord] = (counts[firstWord] || 0) + 1;
       }

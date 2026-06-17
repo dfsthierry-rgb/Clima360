@@ -12,11 +12,9 @@ export function GlobalFilters() {
   };
 
   const openReport = (theme: 'light' | 'dark') => {
-    const origin = window.location.origin;
-    const path = window.location.pathname;
-    const baseUrl = origin + path;
-    const finalBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-    const url = `${finalBase}#/relatorio?theme=${theme}&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`;
+    const baseUrl = window.location.href.split('#')[0];
+    const sep = baseUrl.endsWith('/') ? '' : '/';
+    const url = `${baseUrl}${sep}#/relatorio?theme=${theme}&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`;
     window.open(url, '_blank');
   };
 
@@ -43,14 +41,12 @@ export function GlobalFilters() {
       <div className="ml-auto flex items-center gap-4">
         <button 
            onClick={() => openReport('light')}
-           onClick={() => window.open(`#/relatorio?theme=light&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
         >
           <FileDown size={14} /> Relatório (Claro)
         </button>
         <button 
            onClick={() => openReport('dark')}
-           onClick={() => window.open(`#/relatorio?theme=dark&ciclo=${encodeURIComponent(filters.ciclo)}&empresa=${encodeURIComponent(filters.empresa)}`, '_blank')}
            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-xs font-bold text-slate-300 border border-slate-700"
         >
           <FileDown size={14} /> Relatório (Escuro)
