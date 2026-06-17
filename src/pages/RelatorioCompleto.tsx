@@ -126,7 +126,7 @@ function PrintContent() {
        `}} />
        
        <div className={`mb-8 text-center border-b pb-4 ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
-         <h1 className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>Relatório Completo de Pesquisa de Clima</h1>
+         <h1 className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>Relatório Completo de Pesquisa de Clima Grupo Central Mesh</h1>
          <p className={isLight ? 'text-slate-500 mt-2 text-sm' : 'text-slate-400 mt-2 text-sm'}>
            Filtros Aplicados — Ciclo: <strong>{filters.ciclo}</strong> | Empresa: <strong>{filters.empresa}</strong>
          </p>
