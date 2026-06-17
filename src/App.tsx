@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { PainelExecutivo } from './pages/PainelExecutivo';
 import { PerfilColaboradores } from './pages/PerfilColaboradores';
@@ -15,7 +15,7 @@ import { PersonaMesh } from './pages/PersonaMesh';
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/relatorio" element={<RelatorioCompleto />} />
         <Route path="/" element={<Layout />}>
@@ -33,6 +33,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
