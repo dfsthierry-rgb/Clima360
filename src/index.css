@@ -2,7 +2,6 @@
 
 @theme {
   --color-slate-950: #0b0f19;
-  --color-deep-blue: #0b0f19;
 }
 
 @layer base {
@@ -60,46 +59,13 @@
     
     /* Force backgrounds and border colors to print */
     * {
+      color: black !important;
       border-color: #e2e8f0 !important;
     }
 
     svg text {
       fill: black !important;
     }
-
-    .print-section { page-break-before: always; break-before: page; padding-top: 20px; }
-    .print-section:first-child { page-break-before: auto; break-before: auto; }
-
-    /* Light Theme Print Overrides */
-    .print-report {
-      background: white !important;
-      color: black !important;
-    }
-    .print-report .bg-slate-900\/40,
-    .print-report .bg-slate-800,
-    .print-report .bg-slate-900,
-    .print-report .bg-deep-blue {
-      background-color: white !important;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: none !important;
-    }
-    .print-report .text-slate-100,
-    .print-report .text-slate-200,
-    .print-report .text-slate-300,
-    .print-report .text-slate-400,
-    .print-report .text-slate-500,
-    .print-report .text-white {
-      color: #0f172a !important;
-    }
-    .print-report .text-indigo-400 { color: #4f46e5 !important; }
-    .print-report .text-rose-400 { color: #e11d48 !important; }
-    .print-report .text-emerald-400 { color: #10b981 !important; }
-    .print-report .text-amber-400 { color: #d97706 !important; }
-    .print-report .text-teal-400 { color: #0d9488 !important; }
-    .print-report .text-cyan-400 { color: #0891b2 !important; }
-    .print-report .text-purple-400 { color: #9333ea !important; }
-    .print-report .text-blue-400 { color: #2563eb !important; }
-    .print-report .recharts-text { fill: #0f172a !important; }
     
     /* Don't break charts or cards */
     section, .break-inside-avoid {
