@@ -3,7 +3,7 @@ import { ExportButtons } from '../components/ExportButtons';
 import { useAppContext } from '../context/AppContext';
 import { Bot, MessageCircle, Quote, X, Building2 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, ScatterChart, Scatter, XAxis, YAxis, ZAxis } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, ScatterChart, Scatter, XAxis, YAxis, ZAxis, LabelList } from 'recharts';
 import { InfoTooltip } from '../components/ui/InfoTooltip';
 
 type TabType = 'fiel' | 'ia';
@@ -307,10 +307,10 @@ export function AVozDoColaborador() {
               <Bot className="text-purple-400" /> Mapa Temático (Sentimento x Frequência)
               <InfoTooltip text="Cada bolha é um macro-tema mapeado via NLP. O tamanho indica volume e a cor (verde a vermelho) indica o sentimento médio atrelado a esse tema." className="ml-1.5" />
             </h3>
-             <div className="w-full h-[350px]">
+             <div className="w-full h-[450px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
-                    <XAxis type="category" dataKey="name" name="Tema" tick={{fill: '#94a3b8', fontSize: 12}} axisLine={false} tickLine={false} />
+                  <ScatterChart margin={{ top: 30, right: 30, bottom: 40, left: -20 }}>
+                    <XAxis type="category" dataKey="name" name="Tema" tick={{fill: '#94a3b8', fontSize: 10}} interval={0} angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} />
                     <YAxis type="number" dataKey="y" name="Sentimento" domain={[-1.2, 1.2]} axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(v) => v > 0 ? '+ Sent' : '- Sent'} />
                     <ZAxis type="number" dataKey="z" range={[400, 4000]} name="Menções" />
                     <RechartsTooltip 
@@ -330,6 +330,7 @@ export function AVozDoColaborador() {
                       }}
                     />
                     <Scatter name="Temas" data={bubbleData} opacity={0.8}>
+                      <LabelList dataKey="name" position="top" fill="#fff" fontSize={10} />
                        {bubbleData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
                        ))}
