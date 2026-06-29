@@ -445,22 +445,100 @@ export function PerfilColaboradores() {
           </h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rendaVsFilhosData} layout="vertical" margin={{ top: 10, right: 40, left: 10, bottom: 20 }} barGap={2} barCategoryGap="15%">
+              <BarChart data={rendaVsFilhosData} layout="vertical" margin={{ top: 10, right: 40, left: 10, bottom: 20 }}>
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '12px' }} />
+                <YAxis dataKey="name" type="category" tick={(props: any) => {
+                  const { x, y, payload } = props;
+                  const dataItem = rendaVsFilhosData.find(d => d.name === payload.value);
+                  const total = dataItem ? dataItem.total : 0;
+                  return (
+                    <g transform={`translate(${x},${y})`}>
+                      <text x={-10} y={-4} textAnchor="end" fill="#cbd5e1" fontSize={11} fontWeight={500}>
+                        {payload.value}
+                      </text>
+                      <text x={-10} y={12} textAnchor="end" fill="#38bdf8" fontSize={13} fontWeight={700}>
+                        Total: {total}
+                      </text>
+                    </g>
+                  );
+                }} width={160} axisLine={false} tickLine={false} />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(255,255,255,0.05)' }} 
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl">
+                          <p className="text-white font-bold mb-2 text-sm">{label} <span className="text-sky-400">(Total: {data.total})</span></p>
+                          {payload.map((entry: any, index: number) => {
+                            const val = entry.value;
+                            const perc = data.total > 0 ? ((val / data.total) * 100).toFixed(1) : 0;
+                            return val > 0 ? (
+                              <div key={index} className="flex items-center gap-2 text-xs mb-1">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                <span className="text-slate-300">{entry.name}:</span>
+                                <span className="text-white font-semibold">{val} ({perc}%)</span>
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
                 <Legend verticalAlign="bottom" height={36} />
-                <Bar dataKey="0 Filhos" fill="#6366f1" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="0 Filhos" position="right" fill="#94a3b8" fontSize={10} fontWeight={600} formatter={(v: number) => v > 0 ? v : ''} />
+                <Bar dataKey="0 Filhos" stackId="a" fill="#6366f1">
+                  <LabelList dataKey="0 Filhos" content={(props: any) => {
+                    const { x, y, width, height, value, index } = props;
+                    if (!value || value <= 0 || width < 30) return null;
+                    const tot = rendaVsFilhosData[index]?.total;
+                    const perc = tot > 0 ? ((value / tot) * 100).toFixed(0) : 0;
+                    return (
+                      <text x={x + width / 2} y={y + height / 2} dy={4} textAnchor="middle" fill="#ffffff" fontSize={12} fontWeight={700} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+                        {value} ({perc}%)
+                      </text>
+                    );
+                  }} />
                 </Bar>
-                <Bar dataKey="1 Filho" fill="#10b981" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="1 Filho" position="right" fill="#94a3b8" fontSize={10} fontWeight={600} formatter={(v: number) => v > 0 ? v : ''} />
+                <Bar dataKey="1 Filho" stackId="a" fill="#10b981">
+                  <LabelList dataKey="1 Filho" content={(props: any) => {
+                    const { x, y, width, height, value, index } = props;
+                    if (!value || value <= 0 || width < 30) return null;
+                    const tot = rendaVsFilhosData[index]?.total;
+                    const perc = tot > 0 ? ((value / tot) * 100).toFixed(0) : 0;
+                    return (
+                      <text x={x + width / 2} y={y + height / 2} dy={4} textAnchor="middle" fill="#ffffff" fontSize={12} fontWeight={700} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+                        {value} ({perc}%)
+                      </text>
+                    );
+                  }} />
                 </Bar>
-                <Bar dataKey="2 Filhos" fill="#f59e0b" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="2 Filhos" position="right" fill="#94a3b8" fontSize={10} fontWeight={600} formatter={(v: number) => v > 0 ? v : ''} />
+                <Bar dataKey="2 Filhos" stackId="a" fill="#f59e0b">
+                  <LabelList dataKey="2 Filhos" content={(props: any) => {
+                    const { x, y, width, height, value, index } = props;
+                    if (!value || value <= 0 || width < 30) return null;
+                    const tot = rendaVsFilhosData[index]?.total;
+                    const perc = tot > 0 ? ((value / tot) * 100).toFixed(0) : 0;
+                    return (
+                      <text x={x + width / 2} y={y + height / 2} dy={4} textAnchor="middle" fill="#ffffff" fontSize={12} fontWeight={700} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+                        {value} ({perc}%)
+                      </text>
+                    );
+                  }} />
                 </Bar>
-                <Bar dataKey="3+ Filhos" fill="#ec4899" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="3+ Filhos" position="right" fill="#94a3b8" fontSize={10} fontWeight={600} formatter={(v: number) => v > 0 ? v : ''} />
+                <Bar dataKey="3+ Filhos" stackId="a" fill="#ec4899" radius={[0, 4, 4, 0]}>
+                  <LabelList dataKey="3+ Filhos" content={(props: any) => {
+                    const { x, y, width, height, value, index } = props;
+                    if (!value || value <= 0 || width < 30) return null;
+                    const tot = rendaVsFilhosData[index]?.total;
+                    const perc = tot > 0 ? ((value / tot) * 100).toFixed(0) : 0;
+                    return (
+                      <text x={x + width / 2} y={y + height / 2} dy={4} textAnchor="middle" fill="#ffffff" fontSize={12} fontWeight={700} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}>
+                        {value} ({perc}%)
+                      </text>
+                    );
+                  }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
