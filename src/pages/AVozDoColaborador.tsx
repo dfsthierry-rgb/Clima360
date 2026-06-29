@@ -253,7 +253,7 @@ export function AVozDoColaborador() {
             <div className="w-full h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <Pie data={sentimentStats} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} dataKey="value" label={({name, value}) => value > 0 ? `${value}` : ''} labelLine={false} style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                  <Pie data={sentimentStats} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} dataKey="value" label={({name, value, percent}) => value > 0 ? `${value} (${(percent * 100).toFixed(0)}%)` : ''} labelLine={false} style={{ fontSize: '14px', fontWeight: 'bold' }}>
                     {sentimentStats.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                   </Pie>
                   <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff' }} />

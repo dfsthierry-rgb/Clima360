@@ -56,7 +56,7 @@ export function PrincipaisNecessidades() {
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <Pie data={[{name: 'Sim (Promotores)', value: anonData.filter(d => d.scores['q29'] >= 4).length}, {name: 'Não (Detratores)', value: anonData.filter(d => d.scores['q29'] < 3).length}, {name: 'Neutro', value: anonData.filter(d => d.scores['q29'] === 3).length}]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                  <Pie data={[{name: 'Sim (Promotores)', value: anonData.filter(d => d.scores['q29'] >= 4).length}, {name: 'Não (Detratores)', value: anonData.filter(d => d.scores['q29'] < 3).length}, {name: 'Neutro', value: anonData.filter(d => d.scores['q29'] === 3).length}]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label={({name, value, percent}) => value > 0 ? `${value} (${(percent * 100).toFixed(0)}%)` : ''}>
                     <Cell fill="#10b981" />
                     <Cell fill="#ef4444" />
                     <Cell fill="#f59e0b" />
@@ -73,7 +73,7 @@ export function PrincipaisNecessidades() {
             <div className="h-[250px]">
                <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <Pie data={[{name: 'Satisfeito', value: anonData.filter(d => ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) >= 4).length}, {name: 'Insatisfeito', value: anonData.filter(d => ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) < 3).length}, {name: 'Neutro', value: anonData.filter(d => (((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) >= 3 && ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) < 4)).length}]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                  <Pie data={[{name: 'Satisfeito', value: anonData.filter(d => ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) >= 4).length}, {name: 'Insatisfeito', value: anonData.filter(d => ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) < 3).length}, {name: 'Neutro', value: anonData.filter(d => (((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) >= 3 && ((d.scores['q6'] + d.scores['q9'] + d.scores['q15']) / 3) < 4)).length}]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label={({name, value, percent}) => value > 0 ? `${value} (${(percent * 100).toFixed(0)}%)` : ''}>
                     <Cell fill="#3b82f6" />
                     <Cell fill="#ef4444" />
                     <Cell fill="#64748b" />
@@ -101,84 +101,12 @@ export function PrincipaisNecessidades() {
 }
 
 function NecessidadesIdentificada({ data }: { data: any[] }) {
-  const countAnswers = (field: string) => {
-    let nunca = 0, asvezes = 0, namaioria = 0, sempre = 0, semresp = 0;
-    data.forEach(d => {
-      const v = String(d[field] || '').toLowerCase();
-      if (v.includes('nunca')) nunca++;
-      else if (v.includes('algumas') || v.includes('vezes')) asvezes++;
-      else if (v.includes('maioria')) namaioria++;
-      else if (v.includes('sempre')) sempre++;
-      else semresp++;
-    });
-    const total = data.length || 1;
-    return [
-      { name: 'Nunca/Raramente', value: nunca, percent: Math.round((nunca/total)*100) },
-      { name: 'Algumas Vezes', value: asvezes, percent: Math.round((asvezes/total)*100) },
-      { name: 'Na Maioria das Vezes', value: namaioria, percent: Math.round((namaioria/total)*100) },
-      { name: 'Sempre', value: sempre, percent: Math.round((sempre/total)*100) },
-    ];
-  };
-
-  const chartData = [
-    { title: 'Harmonia No Meu Lar', ...countAnswers('harmoniaLar').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Ajudamos Uns Aos Outros', ...countAnswers('ajudaCasa').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Horas Vagas C/ Família', ...countAnswers('familiaHorasVagas').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Gosto de Ficar em Casa', ...countAnswers('gostoFicarCasa').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Renda Supre Custo', ...countAnswers('rendaSupre').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Notícias/Atualização', ...countAnswers('atualizadoNoticias').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Gosto de Estudar', ...countAnswers('gostoEstudar').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-    { title: 'Atuo na Área Formado', ...countAnswers('atuoAreaFormado').reduce((acc, cur) => ({...acc, [cur.name]: cur.percent}), {}) },
-  ];
-
-  const renderCustomLabel = (props: any) => {
-    const { x, y, width, height, value } = props;
-    if (value === undefined || value === 0 || width < 20) return null;
-    return (
-      <text x={x + width / 2} y={y + height / 2} fill="#fff" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '10px', fontWeight: 'bold' }}>
-        {value}%
-      </text>
-    );
-  };
-
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <h2 className="text-2xl font-semibold text-emerald-400 tracking-tight">Comportamentos Mapeados (Pesquisa Identificada)</h2>
       </div>
       
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
-        <p className="text-slate-300 text-sm leading-relaxed mb-4">
-          <strong className="text-emerald-400">Diretriz PDI:</strong> A base perfeitamente mapeada aqui permite ações individuais. Sugere-se o acompanhamento da jornada do colaborador. Se a "Renda não Supre" + "Gosto de Estudar", direcione a um plano de carreira; se a "Harmonia Familiar" for baixa, recomende apoio psicológico oferecido pela empresa.
-        </p>
-      </div>
-
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 overflow-hidden">
-        <h2 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-6">Mapeamento Sociedemográfico (%)</h2>
-        <div className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 30, left: 100, bottom: 0 }}>
-              <XAxis type="number" hide />
-              <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-              <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff', borderRadius: '12px' }} />
-              <Legend wrapperStyle={{ fontSize: '10px' }} />
-              <Bar dataKey="Nunca/Raramente" stackId="a" fill="#ef4444" radius={[4, 0, 0, 4]}>
-                <LabelList dataKey="Nunca/Raramente" content={renderCustomLabel} />
-              </Bar>
-              <Bar dataKey="Algumas Vezes" stackId="a" fill="#f97316">
-                <LabelList dataKey="Algumas Vezes" content={renderCustomLabel} />
-              </Bar>
-              <Bar dataKey="Na Maioria das Vezes" stackId="a" fill="#0ea5e9">
-                <LabelList dataKey="Na Maioria das Vezes" content={renderCustomLabel} />
-              </Bar>
-              <Bar dataKey="Sempre" stackId="a" fill="#10b981" radius={[0, 4, 4, 0]}>
-                <LabelList dataKey="Sempre" content={renderCustomLabel} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
       <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
         <h2 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-6">Plano de Sucessão e Interesses: Time Identificado</h2>
         <div className="overflow-x-auto max-h-96 overflow-y-auto custom-scrollbar">
